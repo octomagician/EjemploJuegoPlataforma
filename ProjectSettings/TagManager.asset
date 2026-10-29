@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Limit
   - Fire
+  - SpikeHead
+  - Trampoline
+  - Fan
   layers:
   - Default
   - TransparentFX

@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -92,13 +93,13 @@ public class PlayerScript : MonoBehaviour
         {
             //estado de reposo
             //está en el piso y no está presinando ni izq ni derecha
-            if (isGrounded() && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D))
+            if (isGrounded() && !(Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) && !(Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)))
             {
                 animator.SetInteger("state", 0);
             }
             //estado de caminar
             //reposo y izq o derecha
-            else if (isGrounded() && (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)))
+            else if (isGrounded() && (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) || (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)))
             {
                 animator.SetInteger("state", 1);
             }
@@ -122,9 +123,47 @@ public class PlayerScript : MonoBehaviour
         // entonces evalua lo inferior en un margen de 0.1 respecto abajo, está tocando un objeto en la capa terrain?
     }
 
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "SpikeHead")
+        {
+            collision.gameObject.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic; 
+            // cuando colisione contra el trigger, pasa de ser rigidbody estático a dinámico, encontes caerá
+            collision.gameObject.GetComponent<Rigidbody2D>().freezeRotation = true;
+            // para que no rote
+            collision.gameObject.GetComponent<Rigidbody2D>().mass = 100;
+            // subir la masa para que no lo pueda mover el personaje
+            collision.gameObject.GetComponent<Rigidbody2D>().gravityScale = 3;
+            // fuerza con la que va a caer
+        }
+
+        if (collision.gameObject.tag == "Trampoline")
+        {
+            collision.gameObject.GetComponent<Animator>().SetBool("trampoline_state", true);
+            rigidBody.linearVelocity = new Vector2(rigidBody.linearVelocity.x, 30f);
+            // salta más
+        }
+    }
+
+    // para cuando sales del trigger
+    void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Trampoline")
+        {
+            collision.gameObject.GetComponent<Animator>().SetBool("trampoline_state", false);
+        }
+    }
+
+    void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "Fan")
+        {
+            rigidBody.linearVelocity = new Vector2(rigidBody.linearVelocity.x, 5f);
+        }
+    }
     public void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Limit")
+        if (collision.gameObject.tag == "Limit" || collision.gameObject.tag == "SpikeHead")
         {
             animator.SetTrigger("disappear");
         }
