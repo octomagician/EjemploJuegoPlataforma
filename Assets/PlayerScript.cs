@@ -190,6 +190,12 @@ public class PlayerScript : MonoBehaviour
             textManzanas.SetText("" + num_manzanas);
             Destroy(collision.gameObject);
         }
+
+        if (collision.gameObject.tag == "Meta")
+        {
+            PlayerPrefs.SetInt("current_progress", 1); //llegaste al final del primer mundo
+            SceneManager.LoadScene(1);
+        }
     }
 
     // para cuando sales del trigger
